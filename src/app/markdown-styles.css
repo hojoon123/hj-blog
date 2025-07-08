@@ -1,0 +1,107 @@
+/* 코드 하이라이팅 스타일 */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css")
+  (prefers-color-scheme: light);
+@import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css")
+  (prefers-color-scheme: dark);
+
+/* 마크다운 전용 스타일 */
+.markdown-content {
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+/* 앵커 링크 스타일 */
+.anchor-link {
+  text-decoration: none;
+  border: none;
+}
+
+.anchor-link:hover {
+  text-decoration: none;
+}
+
+/* 코드 블록 스크롤바 스타일 */
+.markdown-content pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.markdown-content pre::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.markdown-content pre::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.markdown-content pre::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* 다크모드 스크롤바 */
+.dark .markdown-content pre::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .markdown-content pre::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.dark .markdown-content pre::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* 테이블 반응형 */
+.markdown-content table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .markdown-content table {
+    font-size: 14px;
+  }
+
+  .markdown-content th,
+  .markdown-content td {
+    padding: 8px 12px;
+  }
+}
+
+/* 인용문 스타일 개선 */
+.markdown-content blockquote {
+  position: relative;
+}
+
+.markdown-content blockquote::before {
+  content: '"';
+  position: absolute;
+  left: -8px;
+  top: -8px;
+  font-size: 3rem;
+  color: #3b82f6;
+  opacity: 0.3;
+  font-family: serif;
+}
+
+/* 체크박스 스타일 */
+.markdown-content input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+/* 이미지 캡션 스타일 */
+.markdown-content img + p {
+  text-align: center;
+  font-style: italic;
+  color: #6b7280;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.dark .markdown-content img + p {
+  color: #9ca3af;
+}

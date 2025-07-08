@@ -3,24 +3,212 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #f8fafc;
+  --border: #e2e8f0;
+  --muted: #64748b;
 }
 
+/* 다크모드 변수 - 더 구체적으로 정의 */
+html.dark {
+  --background: #0f172a !important;
+  --foreground: #f1f5f9 !important;
+  --surface: #1e293b !important;
+  --border: #334155 !important;
+  --muted: #94a3b8 !important;
+}
+
+/* Tailwind v4 테마 설정 */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* 강제 다크모드 스타일 */
+html.dark body {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+}
+
+/* 헤더 배경 강제 적용 */
+html.dark header {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(8px);
+}
+
+/* 카드와 표면 요소들 */
+html.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-gray-50 {
+  background-color: #334155 !important;
+}
+
+html.dark .bg-gray-100 {
+  background-color: #475569 !important;
+}
+
+html.dark .bg-gray-800 {
+  background-color: #1e293b !important;
+}
+
+/* 통계 카드 전용 다크모드 스타일 - 어두운 배경으로 통일 */
+html.dark .bg-blue-50 {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-green-50 {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-yellow-50 {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-purple-50 {
+  background-color: #1e293b !important;
+}
+
+/* 통계 카드 텍스트 색상 - 더 밝게 */
+html.dark .text-blue-300 {
+  color: #93c5fd !important;
+}
+
+html.dark .text-green-300 {
+  color: #86efac !important;
+}
+
+html.dark .text-yellow-300 {
+  color: #fde047 !important;
+}
+
+html.dark .text-purple-300 {
+  color: #c4b5fd !important;
+}
+
+/* 텍스트 색상 강제 적용 */
+html.dark .text-gray-900 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-gray-800 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-gray-700 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-gray-600 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-gray-500 {
+  color: #64748b !important;
+}
+
+html.dark .text-gray-400 {
+  color: #64748b !important;
+}
+
+html.dark .text-gray-300 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-gray-200 {
+  color: #e2e8f0 !important;
+}
+
+/* 제목 태그들 강제 적용 */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6 {
+  color: #f1f5f9 !important;
+}
+
+html.dark p {
+  color: #e2e8f0 !important;
+}
+
+/* 테두리 색상 */
+html.dark .border-gray-200 {
+  border-color: #334155 !important;
+}
+
+html.dark .border-gray-700 {
+  border-color: #475569 !important;
+}
+
+html.dark .border-gray-600 {
+  border-color: #475569 !important;
+}
+
+/* 카테고리 태그 다크모드 스타일 개선 */
+html.dark .category-tag-light {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #93c5fd !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+html.dark .category-tag-light:hover {
+  background-color: rgba(59, 130, 246, 0.25) !important;
+  color: #bfdbfe !important;
+}
+
+/* 부드러운 전환 효과 */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* 스크롤바 다크모드 */
+html.dark ::-webkit-scrollbar {
+  width: 8px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* 선택 영역 스타일 */
+html.dark ::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #f1f5f9;
+}
+
+/* 포커스 링 다크모드 */
+html.dark .focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* 코드 블록 다크모드 */
+html.dark pre,
+html.dark code {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #475569 !important;
 }
