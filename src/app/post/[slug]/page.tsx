@@ -27,7 +27,8 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
     if (!slug) {
       return {
-        title: "포스트를 찾을 수 없습니다",
+        title: "포스트를 찾을 수 없습니다 | " + siteConfig.name,
+        description: "요청하신 포스트를 찾을 수 없습니다.",
       }
     }
 
@@ -35,30 +36,55 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
     if (!post) {
       return {
-        title: "포스트를 찾을 수 없습니다",
+        title: "포스트를 찾을 수 없습니다 | " + siteConfig.name,
+        description: "요청하신 포스트를 찾을 수 없습니다.",
       }
     }
 
     const postUrl = getFullUrl(`/post/${post.slug}`)
     const imageUrl = post.thumbnail_url ? getImageUrl(post.thumbnail_url) : getImageUrl(siteConfig.seo.ogImage)
 
+    // 더 나은 description 생성
+    const description =
+      post.excerpt ||
+      post.content
+        .replace(/[#*`[\]]/g, "")
+        .slice(0, 160)
+        .trim() + (post.content.length > 160 ? "..." : "")
+
     // 키워드 생성 (카테고리 + 기본 키워드)
     const keywords = [
       ...siteConfig.seo.keywords,
       ...(post.category ? [post.category.name] : []),
-      ...post.title.split(" ").slice(0, 3), // 제목에서 주요 단어 추출
+      ...post.title
+        .split(" ")
+        .filter((word) => word.length > 1)
+        .slice(0, 3),
     ].filter(Boolean)
 
     return {
       title: `${post.title} | ${siteConfig.name}`,
-      description: post.excerpt || post.content.slice(0, 160),
+      description: description,
       keywords: keywords,
       authors: [{ name: siteConfig.author }],
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-video-preview": -1,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+        },
+      },
       openGraph: {
         title: post.title,
-        description: post.excerpt || post.content.slice(0, 160),
+        description: description,
         type: "article",
         url: postUrl,
+        siteName: siteConfig.name,
+        locale: "ko_KR",
         images: [
           {
             url: imageUrl,
@@ -75,18 +101,29 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       twitter: {
         card: "summary_large_image",
         title: post.title,
-        description: post.excerpt || post.content.slice(0, 160),
+        description: description,
         images: [imageUrl],
+        creator: "@" + siteConfig.author,
       },
       alternates: {
         canonical: postUrl,
+      },
+      other: {
+        "article:author": siteConfig.author,
+        "article:published_time": post.created_at,
+        "article:modified_time": post.updated_at,
+        ...(post.category && { "article:section": post.category.name }),
       },
     }
   } catch (error) {
     console.error("Error generating metadata for post:", error)
     return {
-      title: "포스트를 찾을 수 없습니다",
+      title: "포스트를 찾을 수 없습니다 | " + siteConfig.name,
       description: "요청하신 포스트를 찾을 수 없습니다.",
+      robots: {
+        index: false,
+        follow: false,
+      },
     }
   }
 }
@@ -118,90 +155,120 @@ export default async function PostPage({ params }: PostPageProps) {
 
     const postUrl = getFullUrl(`/post/${post.slug}`)
     const imageUrl = post.thumbnail_url ? getImageUrl(post.thumbnail_url) : getImageUrl(siteConfig.seo.ogImage)
+    const description =
+      post.excerpt ||
+      post.content
+        .replace(/[#*`[\]]/g, "")
+        .slice(0, 160)
+        .trim() + (post.content.length > 160 ? "..." : "")
 
     return (
-      <main className="min-h-screen bg-white dark:bg-slate-900">
-        <StructuredData
-          type="article"
-          data={{
-            title: post.title,
-            description: post.excerpt || post.content.slice(0, 160),
-            url: postUrl,
-            image: imageUrl,
-            datePublished: post.created_at,
-            dateModified: post.updated_at,
-            author: siteConfig.author,
-            category: post.category?.name,
-          }}
-        />
+      <>
+        {/* 추가 SEO 메타 태그 */}
+        <head>
+          <meta name="author" content={siteConfig.author} />
+          <meta name="publisher" content={siteConfig.name} />
+          <meta name="copyright" content={siteConfig.name} />
+          <meta name="language" content="ko" />
+          <meta name="revisit-after" content="7 days" />
+          <link rel="canonical" href={postUrl} />
 
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <article className="bg-white dark:bg-slate-900">
-              {/* 포스트 헤더 - main과 동일한 배경 */}
-              <header className="mb-8 bg-white dark:bg-slate-900">
-                {post.category && (
-                  <Link
-                    href={`/category/${post.category.slug}`}
-                    className="inline-block px-4 py-2 bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300 rounded-full text-sm mb-4 hover:bg-gray-200 dark:hover:bg-slate-700 transition-all duration-200 font-medium"
-                  >
-                    {post.category.name}
-                  </Link>
-                )}
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-                  {post.title}
-                </h1>
-                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-6">
-                  <time dateTime={post.created_at}>
-                    {formatDistanceToNow(new Date(post.created_at), {
-                      addSuffix: true,
-                      locale: ko,
-                    })}
-                  </time>
-                  <span>조회 {post.view_count}</span>
-                </div>
-                {/* 썸네일 이미지 */}
-                {post.thumbnail_url && (
-                  <div className="aspect-[16/9] overflow-hidden rounded-lg">
-                    <Image
-                      src={getImageSrc(post.thumbnail_url) || "/placeholder.svg"}
-                      alt={post.title}
-                      width={800}
-                      height={450}
-                      className="w-full h-full object-cover"
-                      priority
-                    />
+          {/* 추가 Open Graph 태그 */}
+          <meta property="og:site_name" content={siteConfig.name} />
+          <meta property="og:locale" content="ko_KR" />
+          <meta property="article:author" content={siteConfig.author} />
+          <meta property="article:published_time" content={post.created_at} />
+          <meta property="article:modified_time" content={post.updated_at} />
+          {post.category && <meta property="article:section" content={post.category.name} />}
+
+          {/* Twitter Card 추가 태그 */}
+          <meta name="twitter:creator" content={`@${siteConfig.author}`} />
+          <meta name="twitter:site" content={`@${siteConfig.name}`} />
+        </head>
+
+        <main className="min-h-screen bg-white dark:bg-slate-900">
+          <StructuredData
+            type="article"
+            data={{
+              title: post.title,
+              description: description,
+              url: postUrl,
+              image: imageUrl,
+              datePublished: post.created_at,
+              dateModified: post.updated_at,
+              author: siteConfig.author,
+              category: post.category?.name,
+            }}
+          />
+
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-4xl mx-auto">
+              <article className="bg-white dark:bg-slate-900">
+                {/* 포스트 헤더 - main과 동일한 배경 */}
+                <header className="mb-8 bg-white dark:bg-slate-900">
+                  {post.category && (
+                    <Link
+                      href={`/category/${post.category.slug}`}
+                      className="inline-block px-4 py-2 bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300 rounded-full text-sm mb-4 hover:bg-gray-200 dark:hover:bg-slate-700 transition-all duration-200 font-medium"
+                    >
+                      {post.category.name}
+                    </Link>
+                  )}
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                    {post.title}
+                  </h1>
+                  <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    <time dateTime={post.created_at}>
+                      {formatDistanceToNow(new Date(post.created_at), {
+                        addSuffix: true,
+                        locale: ko,
+                      })}
+                    </time>
+                    <span>조회 {post.view_count}</span>
                   </div>
-                )}
-              </header>
+                  {/* 썸네일 이미지 */}
+                  {post.thumbnail_url && (
+                    <div className="aspect-[16/9] overflow-hidden rounded-lg">
+                      <Image
+                        src={getImageSrc(post.thumbnail_url) || "/placeholder.svg"}
+                        alt={post.title}
+                        width={800}
+                        height={450}
+                        className="w-full h-full object-cover"
+                        priority
+                      />
+                    </div>
+                  )}
+                </header>
 
-              {/* 목차 */}
-              <TableOfContents content={post.content} />
+                {/* 목차 */}
+                <TableOfContents content={post.content} />
 
-              {/* 포스트 내용 - 목차와 더 큰 간격 */}
-              <div className="markdown-content mt-24">
-                <MarkdownRenderer content={post.content} />
-              </div>
+                {/* 포스트 내용 - 목차와 더 큰 간격 */}
+                <div className="markdown-content mt-24">
+                  <MarkdownRenderer content={post.content} />
+                </div>
 
-              {/* 콘텐츠 하단 여백 - 충분한 호흡 공간 확보 */}
-              <div className="mt-20"></div>
+                {/* 콘텐츠 하단 여백 - 충분한 호흡 공간 확보 */}
+                <div className="mt-20"></div>
 
-              {/* 뒤로 가기 - 콘텐츠와 충분한 간격 */}
-              <div className="mt-16 pt-12 border-t border-gray-200 dark:border-gray-700">
-                <Link
-                  href="/"
-                  className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-                >
-                  ← 목록으로 돌아가기
-                </Link>
-              </div>
+                {/* 뒤로 가기 - 콘텐츠와 충분한 간격 */}
+                <div className="mt-16 pt-12 border-t border-gray-200 dark:border-gray-700">
+                  <Link
+                    href="/"
+                    className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                  >
+                    ← 목록으로 돌아가기
+                  </Link>
+                </div>
 
-              {/* 페이지 하단 추가 여백 - 스크롤 여유 공간 */}
-              <div className="pb-20"></div>
-            </article>
+                {/* 페이지 하단 추가 여백 - 스크롤 여유 공간 */}
+                <div className="pb-20"></div>
+              </article>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </>
     )
   } catch (error) {
     console.error("Error rendering post page:", error)

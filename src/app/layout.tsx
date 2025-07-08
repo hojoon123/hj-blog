@@ -22,6 +22,17 @@ export const metadata: Metadata = {
   authors: [{ name: siteConfig.author, url: siteConfig.url }],
   creator: siteConfig.author,
   publisher: siteConfig.name,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   formatDetection: {
     email: false,
     address: false,
@@ -48,17 +59,8 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} - 코딩 강사의 개발 이야기`,
     description: siteConfig.description,
     images: [seoConfig.ogImage],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
+    creator: `@${siteConfig.author}`,
+    site: `@${siteConfig.name}`,
   },
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,
@@ -71,6 +73,10 @@ export const metadata: Metadata = {
     types: {
       "application/rss+xml": `${siteConfig.url}/rss.xml`,
     },
+  },
+  other: {
+    "msapplication-TileColor": "#0f172a",
+    "theme-color": "#ffffff",
   },
 }
 
@@ -90,6 +96,16 @@ export default function RootLayout({
             url: siteConfig.url,
           }}
         />
+
+        {/* 기본 SEO 메타 태그 */}
+        <meta name="author" content={siteConfig.author} />
+        <meta name="publisher" content={siteConfig.name} />
+        <meta name="copyright" content={siteConfig.name} />
+        <meta name="language" content="ko" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="rating" content="general" />
+        <meta name="distribution" content="global" />
+
         {/* 파비콘 설정 - PNG 사용 */}
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="shortcut icon" href="/favicon.png" />
@@ -108,6 +124,14 @@ export default function RootLayout({
         {/* 추가 메타 태그 */}
         <meta name="msapplication-TileColor" content="#0f172a" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
+
+        {/* DNS prefetch */}
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+
+        {/* Preconnect */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body
         className={`${inter.className} bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100`}
