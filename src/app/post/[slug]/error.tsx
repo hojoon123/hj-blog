@@ -15,10 +15,10 @@ export default function Error({
   }, [error])
 
   return (
-    <main className="min-h-screen bg-white dark:bg-slate-900 flex items-center justify-center">
+    <div className="min-h-screen bg-white dark:bg-slate-900 flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">포스트를 불러올 수 없습니다</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">요청하신 포스트를 불러오는 중 오류가 발생했습니다.</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">포스트를 불러올 수 없습니다</h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-8">요청하신 포스트를 찾을 수 없거나 오류가 발생했습니다.</p>
         <div className="space-x-4">
           <button
             onClick={reset}
@@ -34,6 +34,6 @@ export default function Error({
           </Link>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

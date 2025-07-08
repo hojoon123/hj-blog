@@ -6,18 +6,18 @@ import StructuredData from "@/components/structured-data"
 import { siteConfig, getFullUrl, getImageUrl } from "@/utils/site-config"
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
-// 완전히 동적 생성으로 변경 - generateStaticParams 제거
+// 완전히 동적 생성으로 변경
 export const dynamic = "force-dynamic"
-export const dynamicParams = true
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   try {
-    const { slug } = params
+    const resolvedParams = await params
+    const { slug } = resolvedParams
 
     if (!slug) {
       return {
@@ -76,7 +76,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   try {
-    const { slug } = params
+    const resolvedParams = await params
+    const { slug } = resolvedParams
 
     if (!slug) {
       notFound()

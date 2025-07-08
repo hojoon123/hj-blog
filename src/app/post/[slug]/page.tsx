@@ -12,18 +12,18 @@ import { siteConfig, getFullUrl, getImageUrl } from "@/utils/site-config"
 import "@/app/markdown-styles.css"
 
 interface PostPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
-// 완전히 동적 생성으로 변경 - generateStaticParams 제거
+// 완전히 동적 생성으로 변경
 export const dynamic = "force-dynamic"
-export const dynamicParams = true
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   try {
-    const { slug } = params
+    const resolvedParams = await params
+    const { slug } = resolvedParams
 
     if (!slug) {
       return {
@@ -93,7 +93,8 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
 export default async function PostPage({ params }: PostPageProps) {
   try {
-    const { slug } = params
+    const resolvedParams = await params
+    const { slug } = resolvedParams
 
     if (!slug) {
       notFound()
