@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { getPostsByCategory, getCategories } from "@/lib/blog-service"
+import { getPostsByCategory, getCategoryBySlug } from "@/lib/blog-service"
 import PostCard from "@/components/post-card"
-import StructuredData from "@/components/structured-data"
-import { siteConfig, getFullUrl, getImageUrl } from "@/utils/site-config"
+import Link from "next/link"
+import { ArrowLeft, Folder } from "lucide-react"
+import { siteConfig } from "@/utils/site-config"
 
 interface CategoryPageProps {
   params: Promise<{
@@ -11,64 +12,40 @@ interface CategoryPageProps {
   }>
 }
 
-// 완전히 동적 생성으로 변경
-export const dynamic = "force-dynamic"
-
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   try {
     const resolvedParams = await params
     const { slug } = resolvedParams
 
-    if (!slug) {
-      return {
-        title: "카테고리를 찾을 수 없습니다",
-      }
-    }
-
-    const categories = await getCategories()
-    const category = categories.find((c) => c.slug === slug)
+    const category = await getCategoryBySlug(slug)
 
     if (!category) {
       return {
-        title: "카테고리를 찾을 수 없습니다",
+        title: "카테고리를 찾을 수 없습니다 | " + siteConfig.name,
+        description: "요청하신 카테고리를 찾을 수 없습니다.",
       }
     }
 
-    const categoryUrl = getFullUrl(`/category/${category.slug}`)
-    const description = category.description || `${category.name} 관련 포스트들을 확인해보세요.`
-
     return {
       title: `${category.name} | ${siteConfig.name}`,
-      description: description,
-      keywords: [...siteConfig.seo.keywords, category.name],
+      description: `${category.name} 카테고리의 모든 게시글을 확인해보세요. 개발 관련 지식과 경험을 공유합니다.`,
+      keywords: [category.name, "개발", "블로그", "카테고리", ...siteConfig.seo.keywords],
       openGraph: {
-        title: `${category.name} - ${siteConfig.name}`,
-        description: description,
+        title: `${category.name} 카테고리`,
+        description: `${category.name} 카테고리의 모든 게시글`,
         type: "website",
-        url: categoryUrl,
-        images: [
-          {
-            url: getImageUrl(siteConfig.seo.ogImage),
-            width: 1200,
-            height: 630,
-            alt: `${category.name} - ${siteConfig.name}`,
-          },
-        ],
+        url: `${siteConfig.url}/category/${category.slug}`,
       },
       twitter: {
-        card: "summary_large_image",
-        title: `${category.name} - ${siteConfig.name}`,
-        description: description,
-        images: [getImageUrl(siteConfig.seo.ogImage)],
-      },
-      alternates: {
-        canonical: categoryUrl,
+        card: "summary",
+        title: `${category.name} 카테고리`,
+        description: `${category.name} 카테고리의 모든 게시글`,
       },
     }
   } catch (error) {
     console.error("Error generating metadata for category:", error)
     return {
-      title: "카테고리를 찾을 수 없습니다",
+      title: "카테고리를 찾을 수 없습니다 | " + siteConfig.name,
       description: "요청하신 카테고리를 찾을 수 없습니다.",
     }
   }
@@ -79,49 +56,54 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     const resolvedParams = await params
     const { slug } = resolvedParams
 
-    if (!slug) {
-      notFound()
-    }
-
-    const [categories, posts] = await Promise.all([getCategories(), getPostsByCategory(slug)])
-
-    const category = categories.find((c) => c.slug === slug)
+    const category = await getCategoryBySlug(slug)
 
     if (!category) {
       notFound()
     }
 
-    const categoryUrl = getFullUrl(`/category/${category.slug}`)
+    const posts = await getPostsByCategory(category.id)
 
     return (
       <main className="container mx-auto px-4 py-8 bg-white dark:bg-slate-900 min-h-screen">
-        <StructuredData
-          type="website"
-          data={{
-            title: `${category.name} - ${siteConfig.name}`,
-            description: category.description || `${category.name} 관련 포스트들을 확인해보세요.`,
-            url: categoryUrl,
-          }}
-        />
+        {/* 뒤로가기 버튼 */}
+        <nav className="mb-8" aria-label="페이지 네비게이션">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg px-2 py-1"
+            aria-label="홈으로 돌아가기"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>홈으로 돌아가기</span>
+          </Link>
+        </nav>
 
         {/* 카테고리 헤더 */}
-        <section className="mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">{category.name}</h1>
-          {category.description && <p className="text-lg text-gray-600 dark:text-gray-400">{category.description}</p>}
-          <div className="mt-4 text-sm text-gray-500 dark:text-gray-500">총 {posts.length}개의 포스트</div>
-        </section>
+        <header className="mb-12 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Folder className="w-8 h-8 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">{category.name}</h1>
+          </div>
+          <p className="text-xl text-gray-600 dark:text-gray-300">{posts.length}개의 게시글</p>
+        </header>
 
-        {/* 포스트 목록 */}
-        <section>
-          {posts.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">이 카테고리에는 아직 포스트가 없습니다.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* 게시글 목록 */}
+        <section aria-labelledby="category-posts">
+          <h2 id="category-posts" className="sr-only">
+            {category.name} 카테고리 게시글 목록
+          </h2>
+
+          {posts.length > 0 ? (
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {posts.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Folder className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">게시글이 없습니다</h3>
+              <p className="text-gray-500 dark:text-gray-400">이 카테고리에는 아직 게시글이 없습니다.</p>
             </div>
           )}
         </section>

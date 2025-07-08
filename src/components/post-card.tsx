@@ -11,7 +11,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  // 이미지 URL 처리 함수 - 최적화 추가
+  // 이미지 URL 처리 함수 - 최적화 개선
   const getImageSrc = (thumbnailUrl: string | undefined) => {
     if (!thumbnailUrl) {
       return "/api/placeholder?height=400&width=600"
@@ -21,9 +21,9 @@ export default function PostCard({ post }: PostCardProps) {
       return `${thumbnailUrl}?height=400&width=600`
     }
 
-    // Vercel Blob 이미지 최적화
+    // Vercel Blob 이미지 최적화 - WebP 포맷 강제
     if (thumbnailUrl.includes("blob.vercel-storage.com")) {
-      return `${thumbnailUrl}?w=600&h=400&fit=crop&auto=format,compress&q=80`
+      return `${thumbnailUrl}?w=600&h=400&fit=crop&auto=format,compress&q=75&fm=webp`
     }
 
     return thumbnailUrl
@@ -49,9 +49,9 @@ export default function PostCard({ post }: PostCardProps) {
                 }}
                 priority={false}
                 loading="lazy"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+Rj5m4xVvEH1Toi/d1a4z6L2mt7d+2Yh2O4hgEEbIhHw=="
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB4QAAEEAgMBAAAAAAAAAAAAAAECAwQRBRIhMUFh/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAYEQADAQEAAAAAAAAAAAAAAAABAgMAEf/aAAwDAQACEQMRAD8A0XiyDI4jHzTRtJc1wBaQeQQdCCOhBGhWMkuqFmHvVMZpWn/Z"
               />
             </div>
           )}
@@ -75,7 +75,7 @@ export default function PostCard({ post }: PostCardProps) {
                   </span>
                 )}
                 <span className="flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -92,7 +92,7 @@ export default function PostCard({ post }: PostCardProps) {
                   {post.view_count}
                 </span>
               </div>
-              <time className="text-xs">
+              <time className="text-xs" dateTime={post.created_at}>
                 {formatDistanceToNow(new Date(post.created_at), {
                   addSuffix: true,
                   locale: ko,

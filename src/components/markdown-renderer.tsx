@@ -116,21 +116,32 @@ function isValidImageSrc(src: unknown): src is string {
   return typeof src === "string" && src.length > 0
 }
 
-// 클릭 가능한 이미지 컴포넌트
+// 클릭 가능한 이미지 컴포넌트 - 최적화 개선
 function ClickableImage({ src, alt }: { src: string; alt: string }) {
   const [modalOpen, setModalOpen] = useState(false)
+
+  // 이미지 최적화 함수
+  const getOptimizedImageSrc = (imageSrc: string) => {
+    if (imageSrc.includes("blob.vercel-storage.com")) {
+      return `${imageSrc}?w=800&h=400&fit=crop&auto=format,compress&q=75&fm=webp`
+    }
+    return imageSrc
+  }
 
   return (
     <>
       <span className="block my-6 group cursor-pointer" onClick={() => setModalOpen(true)}>
         <span className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 block">
           <Image
-            src={src || "/placeholder.svg"}
+            src={getOptimizedImageSrc(src) || "/placeholder.svg"}
             alt={alt || ""}
             width={800}
             height={400}
             className="w-full h-auto max-h-[400px] object-contain transition-transform group-hover:scale-105"
-            unoptimized={src.startsWith("http")}
+            loading="lazy"
+            sizes="(max-width: 768px) 100vw, 800px"
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB4QAAEEAgMBAAAAAAAAAAAAAAECAwQRBRIhMUFh/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAYEQADAQEAAAAAAAAAAAAAAAABAgMAEf/aAAwDAQACEQMRAD8A0XiyDI4jHzTRtJc1wBaQeQQdCCOhBGhWMkuqFmHvVMZpWn/Z"
           />
 
           <span className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">

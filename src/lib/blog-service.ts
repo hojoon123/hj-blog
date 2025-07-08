@@ -92,6 +92,50 @@ export async function getCategories(): Promise<Category[]> {
   }
 }
 
-export async function getPostsByCategory(categorySlug: string): Promise<PostWithCategory[]> {
-  return getPosts(categorySlug)
+export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("slug", slug)
+      .single()
+
+    if (error) {
+      console.error("Error fetching category:", error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error("Unexpected error fetching category:", error)
+    return null
+  }
+}
+
+export async function getPostsByCategory(categoryId: string): Promise<PostWithCategory[]> {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from("posts")
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .eq("category_id", categoryId)
+      .eq("published", true)
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("Error fetching posts by category:", error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error("Unexpected error fetching posts by category:", error)
+    return []
+  }
 }

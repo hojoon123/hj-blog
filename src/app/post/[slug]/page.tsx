@@ -143,7 +143,7 @@ export default async function PostPage({ params }: PostPageProps) {
       notFound()
     }
 
-    // 최적화된 이미지 처리
+    // 최적화된 이미지 처리 - WebP 포맷 강제
     const getImageSrc = (thumbnailUrl: string | undefined) => {
       if (!thumbnailUrl) {
         return "/api/placeholder?height=450&width=800"
@@ -151,9 +151,9 @@ export default async function PostPage({ params }: PostPageProps) {
       if (thumbnailUrl.startsWith("/placeholder.svg")) {
         return `${thumbnailUrl}?height=450&width=800`
       }
-      // Vercel Blob 이미지 최적화
+      // Vercel Blob 이미지 최적화 - WebP 포맷과 더 작은 사이즈
       if (thumbnailUrl.includes("blob.vercel-storage.com")) {
-        return `${thumbnailUrl}?w=800&h=450&fit=crop&auto=format,compress&q=80`
+        return `${thumbnailUrl}?w=800&h=450&fit=crop&auto=format,compress&q=75&fm=webp`
       }
       return thumbnailUrl
     }
@@ -219,6 +219,8 @@ export default async function PostPage({ params }: PostPageProps) {
                       className="w-full h-full object-cover"
                       priority
                       sizes="(max-width: 768px) 100vw, 800px"
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB4QAAEEAgMBAAAAAAAAAAAAAAECAwQRBRIhMUFh/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAYEQADAQEAAAAAAAAAAAAAAAABAgMAEf/aAAwDAQACEQMRAD8A0XiyDI4jHzTRtJc1wBaQeQQdCCOhBGhWMkuqFmHvVMZpWn/Z"
                     />
                   </div>
                 )}

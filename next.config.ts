@@ -28,30 +28,15 @@ const nextConfig = {
         pathname: '/**',
       }
     ],
-    unoptimized: true, // 원래대로 복원
+    unoptimized: true,
+    // quality 옵션 제거 (여기서는 사용할 수 없음)
     formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-  // 안전한 헤더 설정만 유지
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-        ],
-      },
-    ]
+  compress: true,
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns'],
   },
 }
 
