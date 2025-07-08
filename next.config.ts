@@ -1,34 +1,31 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'c1xouq2p8siq3aka.public.blob.vercel-storage.com',
-        port: '',
-        pathname: '/**',
-      },
       {
         protocol: 'https',
         hostname: '*.public.blob.vercel-storage.com',
         port: '',
         pathname: '/**',
       },
-      // 플레이스홀더 이미지용
       {
         protocol: 'https',
-        hostname: 'via.placeholder.com',
+        hostname: 'images.unsplash.com',
         port: '',
         pathname: '/**',
-      }
+      },
     ],
-    unoptimized: true,
+  },
+  // 동적 라우팅 최적화
+  experimental: {
+    dynamicIO: false,
+  },
+  // 빌드 최적화
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
   },
 }
 

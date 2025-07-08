@@ -6,28 +6,18 @@ import StructuredData from "@/components/structured-data"
 import { siteConfig, getFullUrl, getImageUrl } from "@/utils/site-config"
 
 interface CategoryPageProps {
-  params: Promise<{
+  params: {
     slug: string
-  }>
-}
-
-export async function generateStaticParams() {
-  try {
-    const categories = await getCategories()
-    return categories.map((category) => ({
-      slug: category.slug,
-    }))
-  } catch (error) {
-    console.error("Error generating static params for categories:", error)
-    // 에러 발생 시 빈 배열 반환하여 동적 생성으로 fallback
-    return []
   }
 }
 
+// 완전히 동적 생성으로 변경 - generateStaticParams 제거
+export const dynamic = "force-dynamic"
+export const dynamicParams = true
+
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   try {
-    const resolvedParams = await params
-    const { slug } = resolvedParams
+    const { slug } = params
 
     if (!slug) {
       return {
@@ -86,8 +76,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   try {
-    const resolvedParams = await params
-    const { slug } = resolvedParams
+    const { slug } = params
 
     if (!slug) {
       notFound()
