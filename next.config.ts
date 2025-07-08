@@ -28,7 +28,30 @@ const nextConfig = {
         pathname: '/**',
       }
     ],
-    unoptimized: true,
+    unoptimized: true, // 원래대로 복원
+    formats: ['image/webp', 'image/avif'],
+  },
+  // 안전한 헤더 설정만 유지
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+    ]
   },
 }
 

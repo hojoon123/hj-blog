@@ -11,7 +11,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  // 이미지 URL 처리 함수
+  // 이미지 URL 처리 함수 - 최적화 추가
   const getImageSrc = (thumbnailUrl: string | undefined) => {
     if (!thumbnailUrl) {
       return "/api/placeholder?height=400&width=600"
@@ -19,6 +19,11 @@ export default function PostCard({ post }: PostCardProps) {
 
     if (thumbnailUrl.startsWith("/placeholder.svg")) {
       return `${thumbnailUrl}?height=400&width=600`
+    }
+
+    // Vercel Blob 이미지 최적화
+    if (thumbnailUrl.includes("blob.vercel-storage.com")) {
+      return `${thumbnailUrl}?w=600&h=400&fit=crop&auto=format,compress&q=80`
     }
 
     return thumbnailUrl
@@ -43,6 +48,8 @@ export default function PostCard({ post }: PostCardProps) {
                   target.src = "/api/placeholder?height=400&width=600"
                 }}
                 priority={false}
+                loading="lazy"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 placeholder="blur"
                 blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+Rj5m4xVvEH1Toi/d1a4z6L2mt7d+2Yh2O4hgEEbIhHw=="
               />

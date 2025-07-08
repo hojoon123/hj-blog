@@ -143,12 +143,17 @@ export default async function PostPage({ params }: PostPageProps) {
       notFound()
     }
 
+    // 최적화된 이미지 처리
     const getImageSrc = (thumbnailUrl: string | undefined) => {
       if (!thumbnailUrl) {
         return "/api/placeholder?height=450&width=800"
       }
       if (thumbnailUrl.startsWith("/placeholder.svg")) {
         return `${thumbnailUrl}?height=450&width=800`
+      }
+      // Vercel Blob 이미지 최적화
+      if (thumbnailUrl.includes("blob.vercel-storage.com")) {
+        return `${thumbnailUrl}?w=800&h=450&fit=crop&auto=format,compress&q=80`
       }
       return thumbnailUrl
     }
@@ -163,112 +168,89 @@ export default async function PostPage({ params }: PostPageProps) {
         .trim() + (post.content.length > 160 ? "..." : "")
 
     return (
-      <>
-        {/* 추가 SEO 메타 태그 */}
-        <head>
-          <meta name="author" content={siteConfig.author} />
-          <meta name="publisher" content={siteConfig.name} />
-          <meta name="copyright" content={siteConfig.name} />
-          <meta name="language" content="ko" />
-          <meta name="revisit-after" content="7 days" />
-          <link rel="canonical" href={postUrl} />
+      <main className="min-h-screen bg-white dark:bg-slate-900">
+        <StructuredData
+          type="article"
+          data={{
+            title: post.title,
+            description: description,
+            url: postUrl,
+            image: imageUrl,
+            datePublished: post.created_at,
+            dateModified: post.updated_at,
+            author: siteConfig.author,
+            category: post.category?.name,
+          }}
+        />
 
-          {/* 추가 Open Graph 태그 */}
-          <meta property="og:site_name" content={siteConfig.name} />
-          <meta property="og:locale" content="ko_KR" />
-          <meta property="article:author" content={siteConfig.author} />
-          <meta property="article:published_time" content={post.created_at} />
-          <meta property="article:modified_time" content={post.updated_at} />
-          {post.category && <meta property="article:section" content={post.category.name} />}
-
-          {/* Twitter Card 추가 태그 */}
-          <meta name="twitter:creator" content={`@${siteConfig.author}`} />
-          <meta name="twitter:site" content={`@${siteConfig.name}`} />
-        </head>
-
-        <main className="min-h-screen bg-white dark:bg-slate-900">
-          <StructuredData
-            type="article"
-            data={{
-              title: post.title,
-              description: description,
-              url: postUrl,
-              image: imageUrl,
-              datePublished: post.created_at,
-              dateModified: post.updated_at,
-              author: siteConfig.author,
-              category: post.category?.name,
-            }}
-          />
-
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-4xl mx-auto">
-              <article className="bg-white dark:bg-slate-900">
-                {/* 포스트 헤더 - main과 동일한 배경 */}
-                <header className="mb-8 bg-white dark:bg-slate-900">
-                  {post.category && (
-                    <Link
-                      href={`/category/${post.category.slug}`}
-                      className="inline-block px-4 py-2 bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300 rounded-full text-sm mb-4 hover:bg-gray-200 dark:hover:bg-slate-700 transition-all duration-200 font-medium"
-                    >
-                      {post.category.name}
-                    </Link>
-                  )}
-                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-                    {post.title}
-                  </h1>
-                  <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-6">
-                    <time dateTime={post.created_at}>
-                      {formatDistanceToNow(new Date(post.created_at), {
-                        addSuffix: true,
-                        locale: ko,
-                      })}
-                    </time>
-                    <span>조회 {post.view_count}</span>
-                  </div>
-                  {/* 썸네일 이미지 */}
-                  {post.thumbnail_url && (
-                    <div className="aspect-[16/9] overflow-hidden rounded-lg">
-                      <Image
-                        src={getImageSrc(post.thumbnail_url) || "/placeholder.svg"}
-                        alt={post.title}
-                        width={800}
-                        height={450}
-                        className="w-full h-full object-cover"
-                        priority
-                      />
-                    </div>
-                  )}
-                </header>
-
-                {/* 목차 */}
-                <TableOfContents content={post.content} />
-
-                {/* 포스트 내용 - 목차와 더 큰 간격 */}
-                <div className="markdown-content mt-24">
-                  <MarkdownRenderer content={post.content} />
-                </div>
-
-                {/* 콘텐츠 하단 여백 - 충분한 호흡 공간 확보 */}
-                <div className="mt-20"></div>
-
-                {/* 뒤로 가기 - 콘텐츠와 충분한 간격 */}
-                <div className="mt-16 pt-12 border-t border-gray-200 dark:border-gray-700">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <article className="bg-white dark:bg-slate-900">
+              {/* 포스트 헤더 - main과 동일한 배경 */}
+              <header className="mb-8 bg-white dark:bg-slate-900">
+                {post.category && (
                   <Link
-                    href="/"
-                    className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                    href={`/category/${post.category.slug}`}
+                    className="inline-block px-4 py-2 bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300 rounded-full text-sm mb-4 hover:bg-gray-200 dark:hover:bg-slate-700 transition-all duration-200 font-medium"
                   >
-                    ← 목록으로 돌아가기
+                    {post.category.name}
                   </Link>
+                )}
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                  {post.title}
+                </h1>
+                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-6">
+                  <time dateTime={post.created_at}>
+                    {formatDistanceToNow(new Date(post.created_at), {
+                      addSuffix: true,
+                      locale: ko,
+                    })}
+                  </time>
+                  <span>조회 {post.view_count}</span>
                 </div>
+                {/* 썸네일 이미지 - 최적화된 사이즈 */}
+                {post.thumbnail_url && (
+                  <div className="aspect-[16/9] overflow-hidden rounded-lg">
+                    <Image
+                      src={getImageSrc(post.thumbnail_url) || "/placeholder.svg"}
+                      alt={post.title}
+                      width={800}
+                      height={450}
+                      className="w-full h-full object-cover"
+                      priority
+                      sizes="(max-width: 768px) 100vw, 800px"
+                    />
+                  </div>
+                )}
+              </header>
 
-                {/* 페이지 하단 추가 여백 - 스크롤 여유 공간 */}
-                <div className="pb-20"></div>
-              </article>
-            </div>
+              {/* 목차 */}
+              <TableOfContents content={post.content} />
+
+              {/* 포스트 내용 - 목차와 더 큰 간격 */}
+              <div className="markdown-content mt-24">
+                <MarkdownRenderer content={post.content} />
+              </div>
+
+              {/* 콘텐츠 하단 여백 - 충분한 호흡 공간 확보 */}
+              <div className="mt-20"></div>
+
+              {/* 뒤로 가기 - 콘텐츠와 충분한 간격 */}
+              <div className="mt-16 pt-12 border-t border-gray-200 dark:border-gray-700">
+                <Link
+                  href="/"
+                  className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                >
+                  ← 목록으로 돌아가기
+                </Link>
+              </div>
+
+              {/* 페이지 하단 추가 여백 - 스크롤 여유 공간 */}
+              <div className="pb-20"></div>
+            </article>
           </div>
-        </main>
-      </>
+        </div>
+      </main>
     )
   } catch (error) {
     console.error("Error rendering post page:", error)
