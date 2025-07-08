@@ -50,9 +50,10 @@ function CopyButton({ text }: CopyButtonProps) {
   return (
     <button
       onClick={handleCopy}
-      className="absolute top-3 right-3 p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+      className="absolute top-3 right-3 p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white"
       title="코드 복사"
       type="button"
+      aria-label="코드 복사"
     >
       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
     </button>
@@ -115,15 +116,13 @@ function isValidImageSrc(src: unknown): src is string {
   return typeof src === "string" && src.length > 0
 }
 
-// 클릭 가능한 이미지 컴포넌트 - Hydration 에러 해결
+// 클릭 가능한 이미지 컴포넌트
 function ClickableImage({ src, alt }: { src: string; alt: string }) {
   const [modalOpen, setModalOpen] = useState(false)
 
   return (
     <>
-      {/* 이미지 컨테이너 - span으로 변경하여 p 태그와 호환 */}
       <span className="block my-6 group cursor-pointer" onClick={() => setModalOpen(true)}>
-        {/* 크기 제한된 이미지 - 최대 높이 400px */}
         <span className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 block">
           <Image
             src={src || "/placeholder.svg"}
@@ -134,20 +133,17 @@ function ClickableImage({ src, alt }: { src: string; alt: string }) {
             unoptimized={src.startsWith("http")}
           />
 
-          {/* 확대 아이콘 오버레이 */}
           <span className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
             <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 text-white p-3 rounded-full">
               <ZoomIn className="w-6 h-6" />
             </span>
           </span>
 
-          {/* 클릭 안내 */}
           <span className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 text-white text-xs px-2 py-1 rounded">
             클릭하여 확대
           </span>
         </span>
 
-        {/* 이미지 캡션 */}
         {alt && (
           <span className="block text-center text-sm text-gray-500 dark:text-gray-400 mt-3 italic leading-relaxed">
             {alt}
@@ -155,7 +151,6 @@ function ClickableImage({ src, alt }: { src: string; alt: string }) {
         )}
       </span>
 
-      {/* 이미지 모달 */}
       <ImageModal src={src || "/placeholder.svg"} alt={alt} isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </>
   )
@@ -166,7 +161,7 @@ const components: Components = {
   // 코드 블록
   code: CodeBlock,
 
-  // 헤딩 - data 속성으로 원본 텍스트 저장
+  // 헤딩 - 시맨틱하고 접근성 좋은 구조
   h1: ({ children }) => (
     <h1 className="text-3xl font-bold mt-8 mb-4 text-gray-900 dark:text-white" data-heading-text={String(children)}>
       {children}
@@ -203,31 +198,34 @@ const components: Components = {
     </h6>
   ),
 
-  // 단락 - 이미지가 포함된 경우 특별 처리
+  // 단락
   p: ({ children }) => {
-    // children이 이미지만 포함하는지 확인
     const hasOnlyImage = React.Children.toArray(children).every((child) => {
       return React.isValidElement(child) && (child.type === "img" || (typeof child.type === "object" && child.type))
     })
 
-    // 이미지만 있는 경우 div로 렌더링
     if (hasOnlyImage) {
       return <div className="my-6">{children}</div>
     }
 
-    // 일반 단락
     return <p className="mb-4 text-gray-800 dark:text-gray-200 leading-relaxed">{children}</p>
   },
 
-  // 링크
+  // 링크 - 접근성 개선
   a: ({ href, children }) => {
     const isExternal = typeof href === "string" && href.startsWith("http")
     const linkClass =
-      "text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline underline-offset-2 transition-colors"
+      "text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline underline-offset-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
 
     if (isExternal) {
       return (
-        <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={linkClass}
+          aria-label={`외부 링크: ${children} (새 창에서 열림)`}
+        >
           {children}
         </a>
       )
@@ -240,7 +238,7 @@ const components: Components = {
     )
   },
 
-  // 개선된 이미지 - Hydration 에러 해결
+  // 이미지
   img: ({ src, alt }) => {
     if (!isValidImageSrc(src)) {
       return null
@@ -249,27 +247,37 @@ const components: Components = {
     return <ClickableImage src={src} alt={alt || ""} />
   },
 
-  // 인용문 - 라이트모드는 blue 유지, 다크모드만 더 밝은 회색으로
+  // 인용문 - 색상 대비 개선
   blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-blue-500 pl-6 py-4 my-6 bg-blue-50 dark:bg-slate-600 text-gray-700 dark:text-gray-200 italic">
+    <blockquote className="border-l-4 border-blue-500 pl-6 py-4 my-6 bg-blue-50 dark:bg-slate-700 text-gray-800 dark:text-gray-100 italic">
       {children}
     </blockquote>
   ),
 
-  // 목록
+  // 목록 - 예쁜 불릿 포인트 스타일
   ul: ({ children }) => (
-    <ul className="list-disc list-inside mb-4 space-y-1 text-gray-800 dark:text-gray-200">{children}</ul>
+    <ul className="mb-4 space-y-2 text-gray-800 dark:text-gray-200" role="list">
+      {children}
+    </ul>
   ),
 
   ol: ({ children }) => (
-    <ol className="list-decimal list-inside mb-4 space-y-1 text-gray-800 dark:text-gray-200">{children}</ol>
+    <ol className="mb-4 space-y-2 text-gray-800 dark:text-gray-200 counter-reset-item" role="list">
+      {children}
+    </ol>
   ),
 
-  li: ({ children }) => <li className="ml-4">{children}</li>,
+  // 리스트 아이템 - 예쁜 불릿 포인트
+  li: ({ children }) => (
+    <li className="flex items-start gap-3 leading-relaxed">
+      <span className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2.5" aria-hidden="true" />
+      <span className="flex-1">{children}</span>
+    </li>
+  ),
 
-  // 테이블
+  // 테이블 - 접근성 개선
   table: ({ children }) => (
-    <div className="overflow-x-auto my-6">
+    <div className="overflow-x-auto my-6" role="region" aria-label="데이터 테이블" tabIndex={0}>
       <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         {children}
       </table>
@@ -279,7 +287,10 @@ const components: Components = {
   thead: ({ children }) => <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>,
 
   th: ({ children }) => (
-    <th className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700">
+    <th
+      className="px-4 py-2 text-left text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700"
+      scope="col"
+    >
       {children}
     </th>
   ),
@@ -291,9 +302,9 @@ const components: Components = {
   ),
 
   // 수평선
-  hr: () => <hr className="my-8 border-gray-200 dark:border-gray-700" />,
+  hr: () => <hr className="my-8 border-gray-200 dark:border-gray-700" role="separator" />,
 
-  // 강조
+  // 강조 - 색상 대비 개선
   strong: ({ children }) => <strong className="font-bold text-gray-900 dark:text-white">{children}</strong>,
 
   em: ({ children }) => <em className="italic text-gray-800 dark:text-gray-200">{children}</em>,
