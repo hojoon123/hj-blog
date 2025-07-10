@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
@@ -6,15 +9,57 @@
   --surface: #f8fafc;
   --border: #e2e8f0;
   --muted: #64748b;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #60a5fa;
+  --secondary-foreground: #ffffff;
+  --accent: #60a5fa;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --radius: 0.75rem;
+  --chart-1: #38bdf8;
+  --chart-2: #ec4899;
+  --chart-3: #eab308;
+  --chart-4: #8b5cf6;
+  --chart-5: #db2777;
 }
 
-/* 다크모드 변수 - 더 구체적으로 정의 */
+html {
+  color-scheme: light;
+}
+
 html.dark {
   --background: #0f172a !important;
   --foreground: #f1f5f9 !important;
   --surface: #1e293b !important;
   --border: #334155 !important;
   --muted: #94a3b8 !important;
+  --card: #1e293b !important;
+  --card-foreground: #f1f5f9 !important;
+  --popover: #1e293b !important;
+  --popover-foreground: #f1f5f9 !important;
+  --primary: #8b5cf6 !important;
+  --primary-foreground: #f1f5f9 !important;
+  --secondary: #475569 !important;
+  --secondary-foreground: #f1f5f9 !important;
+  --accent: #475569 !important;
+  --accent-foreground: #f1f5f9 !important;
+  --destructive: #ef4444 !important;
+  --destructive-foreground: #f1f5f9 !important;
+  --border: #475569 !important;
+  --input: #475569 !important;
+  --ring: #8b5cf6 !important;
+  --radius: 0.75rem;
+  --chart-1: #38bdf8 !important;
+  --chart-2: #ec4899 !important;
+  --chart-3: #eab308 !important;
+  --chart-4: #8b5cf6 !important;
+  --chart-5: #db2777 !important;
 }
 
 /* Tailwind v4 테마 설정 */
@@ -28,26 +73,31 @@ html.dark {
   --font-mono: var(--font-geist-mono);
 }
 
-body {
-  background: var(--background) !important;
-  color: var(--foreground) !important;
-  font-family: Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: Arial, Helvetica, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
 }
 
-/* 강제 다크모드 스타일 */
+html.dark {
+  color-scheme: dark;
+}
+
 html.dark body {
   background: #0f172a !important;
   color: #f1f5f9 !important;
 }
 
-/* 헤더 배경 강제 적용 */
 html.dark header {
   background: rgba(15, 23, 42, 0.95) !important;
   backdrop-filter: blur(8px);
 }
 
-/* 카드와 표면 요소들 */
 html.dark .bg-white {
   background-color: #1e293b !important;
 }
@@ -64,7 +114,6 @@ html.dark .bg-gray-800 {
   background-color: #1e293b !important;
 }
 
-/* 통계 카드 전용 다크모드 스타일 - 어두운 배경으로 통일 */
 html.dark .bg-blue-50 {
   background-color: #1e293b !important;
 }
@@ -81,7 +130,6 @@ html.dark .bg-purple-50 {
   background-color: #1e293b !important;
 }
 
-/* 통계 카드 텍스트 색상 - 더 밝게 */
 html.dark .text-blue-300 {
   color: #93c5fd !important;
 }
@@ -98,7 +146,6 @@ html.dark .text-purple-300 {
   color: #c4b5fd !important;
 }
 
-/* 텍스트 색상 강제 적용 */
 html.dark .text-gray-900 {
   color: #f1f5f9 !important;
 }
@@ -131,7 +178,6 @@ html.dark .text-gray-200 {
   color: #e2e8f0 !important;
 }
 
-/* 제목 태그들 강제 적용 */
 html.dark h1,
 html.dark h2,
 html.dark h3,
@@ -145,7 +191,6 @@ html.dark p {
   color: #e2e8f0 !important;
 }
 
-/* 테두리 색상 */
 html.dark .border-gray-200 {
   border-color: #334155 !important;
 }
@@ -158,7 +203,6 @@ html.dark .border-gray-600 {
   border-color: #475569 !important;
 }
 
-/* 카테고리 태그 다크모드 스타일 개선 */
 html.dark .category-tag-light {
   background-color: rgba(59, 130, 246, 0.15) !important;
   color: #93c5fd !important;
@@ -170,12 +214,6 @@ html.dark .category-tag-light:hover {
   color: #bfdbfe !important;
 }
 
-/* 부드러운 전환 효과 */
-* {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-/* 스크롤바 다크모드 */
 html.dark ::-webkit-scrollbar {
   width: 8px;
 }
@@ -193,22 +231,103 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   background: #64748b;
 }
 
-/* 선택 영역 스타일 */
 html.dark ::selection {
   background: rgba(59, 130, 246, 0.3);
   color: #f1f5f9;
 }
 
-/* 포커스 링 다크모드 */
 html.dark .focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
 }
 
-/* 코드 블록 다크모드 */
 html.dark pre,
 html.dark code {
   background-color: #1e293b !important;
   color: #e2e8f0 !important;
   border-color: #475569 !important;
+}
+
+.dark .markdown-content table {
+  background-color: rgb(30 41 59) !important; /* slate-800 */
+  border-color: rgb(71 85 105) !important; /* slate-600 */
+}
+
+.dark .markdown-content thead {
+  background-color: rgb(51 65 85) !important; /* slate-700 */
+}
+
+.dark .markdown-content th {
+  background-color: rgb(51 65 85) !important; /* slate-700 */
+  color: rgb(248 250 252) !important; /* slate-100 */
+  border-color: rgb(71 85 105) !important; /* slate-600 */
+}
+
+.dark .markdown-content td {
+  background-color: rgb(30 41 59) !important; /* slate-800 */
+  color: rgb(226 232 240) !important; /* slate-200 */
+  border-color: rgb(71 85 105) !important; /* slate-600 */
+}
+
+.dark .markdown-content tr:hover td {
+  background-color: rgb(51 65 85) !important; /* slate-700 */
+}
+
+.markdown-content table {
+  background-color: white !important;
+  border-color: rgb(229 231 235) !important; /* gray-200 */
+}
+
+.markdown-content thead {
+  background-color: rgb(249 250 251) !important; /* gray-50 */
+}
+
+.markdown-content th {
+  background-color: rgb(249 250 251) !important; /* gray-50 */
+  color: rgb(17 24 39) !important; /* gray-900 */
+  border-color: rgb(229 231 235) !important; /* gray-200 */
+}
+
+.markdown-content td {
+  background-color: white !important;
+  color: rgb(31 41 55) !important; /* gray-800 */
+  border-color: rgb(243 244 246) !important; /* gray-100 */
+}
+
+.markdown-content tr:hover td {
+  background-color: rgb(249 250 251) !important; /* gray-50 */
+}
+
+.dark .toc-container {
+  background-color: rgba(15, 23, 42, 0.95) !important; /* slate-900/95 */
+  border-color: rgb(51 65 85) !important; /* slate-700 */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .toc-header {
+  border-color: rgb(51 65 85) !important; /* slate-700 */
+  color: rgb(248 250 252) !important; /* slate-100 */
+}
+
+.dark .toc-button {
+  color: rgb(148 163 184) !important; /* slate-400 */
+}
+
+.dark .toc-button:hover {
+  color: rgb(226 232 240) !important; /* slate-200 */
+  background-color: rgb(30 41 59) !important; /* slate-800 */
+}
+
+.dark .toc-item {
+  color: rgb(203 213 225) !important; /* slate-300 */
+}
+
+.dark .toc-item:hover {
+  color: rgb(248 250 252) !important; /* slate-100 */
+  background-color: rgb(30 41 59) !important; /* slate-800 */
+}
+
+.dark .toc-footer {
+  border-color: rgb(51 65 85) !important; /* slate-700 */
+  color: rgb(148 163 184) !important; /* slate-400 */
 }

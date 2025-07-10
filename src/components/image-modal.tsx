@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { X, Download, ZoomIn, ZoomOut, RotateCcw } from "lucide-react"
 import Image from "next/image"
 
@@ -16,6 +17,12 @@ export default function ImageModal({ src, alt, isOpen, onClose }: ImageModalProp
   const [imageLoaded, setImageLoaded] = useState(false)
   const [isZoomed, setIsZoomed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // 클라이언트 사이드에서만 렌더링
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // 모바일 감지
   useEffect(() => {
@@ -47,8 +54,6 @@ export default function ImageModal({ src, alt, isOpen, onClose }: ImageModalProp
     }
   }, [isOpen, onClose])
 
-  if (!isOpen) return null
-
   const handleDownload = () => {
     const link = document.createElement("a")
     link.href = src
@@ -72,7 +77,10 @@ export default function ImageModal({ src, alt, isOpen, onClose }: ImageModalProp
     setIsZoomed(false)
   }
 
-  return (
+  // 서버 사이드에서는 렌더링하지 않음
+  if (!mounted || !isOpen) return null
+
+  const modalContent = (
     <div
       className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center"
       onClick={handleBackdropClick}
@@ -178,11 +186,11 @@ export default function ImageModal({ src, alt, isOpen, onClose }: ImageModalProp
         >
           <div className="max-w-7xl mx-auto">
             <div className="bg-white/10 backdrop-blur-sm text-white p-3 md:p-4 rounded-lg border border-white/20">
-              <p className={`text-center leading-relaxed ${isMobile ? "text-sm" : "text-sm"}`}>{alt}</p>
+              <div className={`text-center leading-relaxed ${isMobile ? "text-sm" : "text-sm"}`}>{alt}</div>
               {isZoomed && (
-                <p className={`text-center text-white/70 mt-2 ${isMobile ? "text-xs" : "text-xs"}`}>
+                <div className={`text-center text-white/70 mt-2 ${isMobile ? "text-xs" : "text-xs"}`}>
                   {isMobile ? "이미지를 터치하여 축소" : "이미지를 클릭하여 축소할 수 있습니다"}
-                </p>
+                </div>
               )}
             </div>
           </div>
@@ -197,4 +205,7 @@ export default function ImageModal({ src, alt, isOpen, onClose }: ImageModalProp
       )}
     </div>
   )
+
+  // Portal을 사용해서 body에 직접 렌더링
+  return createPortal(modalContent, document.body)
 }

@@ -143,23 +143,27 @@ export default async function PostPage({ params }: PostPageProps) {
       notFound()
     }
 
-    // 최적화된 이미지 처리 - WebP 포맷 강제
+    // 최적화된 이미지 처리
     const getImageSrc = (thumbnailUrl: string | undefined) => {
       if (!thumbnailUrl) {
-        return "/api/placeholder?height=450&width=800"
+        return "/placeholder.svg?height=450&width=800"
       }
+
       if (thumbnailUrl.startsWith("/placeholder.svg")) {
         return `${thumbnailUrl}?height=450&width=800`
       }
-      // Vercel Blob 이미지 최적화 - WebP 포맷과 더 작은 사이즈
+
+      // Vercel Blob 이미지 최적화
       if (thumbnailUrl.includes("blob.vercel-storage.com")) {
-        return `${thumbnailUrl}?w=800&h=450&fit=crop&auto=format,compress&q=75&fm=webp`
+        return `${thumbnailUrl}?w=800&h=450&fit=crop&fm=webp&q=75`
       }
+
       return thumbnailUrl
     }
 
     const postUrl = getFullUrl(`/post/${post.slug}`)
     const imageUrl = post.thumbnail_url ? getImageUrl(post.thumbnail_url) : getImageUrl(siteConfig.seo.ogImage)
+
     const description =
       post.excerpt ||
       post.content
@@ -196,9 +200,11 @@ export default async function PostPage({ params }: PostPageProps) {
                     {post.category.name}
                   </Link>
                 )}
+
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
                   {post.title}
                 </h1>
+
                 <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-6">
                   <time dateTime={post.created_at}>
                     {formatDistanceToNow(new Date(post.created_at), {
@@ -208,6 +214,7 @@ export default async function PostPage({ params }: PostPageProps) {
                   </time>
                   <span>조회 {post.view_count}</span>
                 </div>
+
                 {/* 썸네일 이미지 - 최적화된 사이즈 */}
                 {post.thumbnail_url && (
                   <div className="aspect-[16/9] overflow-hidden rounded-lg">
@@ -218,9 +225,9 @@ export default async function PostPage({ params }: PostPageProps) {
                       height={450}
                       className="w-full h-full object-cover"
                       priority
-                      sizes="(max-width: 768px) 100vw, 800px"
                       placeholder="blur"
-                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAAAAAAAAAAAAAAAAAAAACv/EAB4QAAEEAgMBAAAAAAAAAAAAAAECAwQRBRIhMUFh/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAYEQADAQEAAAAAAAAAAAAAAAABAgMAEf/aAAwDAQACEQMRAD8A0XiyDI4jHzTRtJc1wBaQeQQdCCOhBGhWMkuqFmHvVMZpWn/Z"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                      sizes="(max-width: 768px) 100vw, 800px"
                     />
                   </div>
                 )}
@@ -229,10 +236,10 @@ export default async function PostPage({ params }: PostPageProps) {
               {/* 목차 */}
               <TableOfContents content={post.content} />
 
-              {/* 포스트 내용 - 목차와 더 큰 간격 */}
-              <div className="markdown-content mt-24">
+              {/* 포스트 내용 - div 대신 section 사용하여 하이드레이션 에러 방지 */}
+              <section className="markdown-content mt-24">
                 <MarkdownRenderer content={post.content} />
-              </div>
+              </section>
 
               {/* 콘텐츠 하단 여백 - 충분한 호흡 공간 확보 */}
               <div className="mt-20"></div>
