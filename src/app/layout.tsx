@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     site: `@${siteConfig.name}`,
   },
   verification: {
-    google: process.env.GOOGLE_SITE_VERIFICATION,
+    // google: process.env.GOOGLE_SITE_VERIFICATION,
     other: {
       "naver-site-verification": process.env.NAVER_SITE_VERIFICATION || "",
     },
