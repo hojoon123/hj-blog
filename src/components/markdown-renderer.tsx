@@ -9,7 +9,7 @@ import remarkBreaks from "remark-breaks"
 import remarkEmoji from "remark-emoji"
 import rehypeRaw from "rehype-raw"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { oneDark, oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism"
+import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism"
 import { useTheme } from "@/contexts/theme-context"
 import { Copy, Check, ZoomIn } from "lucide-react"
 import Link from "next/link"
@@ -68,7 +68,36 @@ function detectLanguage(code: string): string {
     codeStr.includes("print(") ||
     codeStr.includes("def ") ||
     codeStr.includes("import ") ||
-    codeStr.includes("from ")
+    codeStr.includes("from ") ||
+    codeStr.includes("class ") ||
+    codeStr.includes("lambda ") ||
+    codeStr.includes("if __name__") ||
+    codeStr.includes("async def ") ||
+    codeStr.includes("await ") ||
+    codeStr.includes("try:") ||
+    codeStr.includes("except ") ||
+    codeStr.includes("with ") ||
+    codeStr.includes("for ") ||
+    codeStr.includes("while ") ||
+    codeStr.includes("return ") ||
+    codeStr.includes("yield ") ||
+    codeStr.includes("raise ") ||
+    codeStr.includes("import this") ||
+    codeStr.includes("isinstance(") ||
+    codeStr.includes("type(") ||
+    codeStr.includes("len(") ||
+    codeStr.includes("str(") ||
+    codeStr.includes("int(") ||
+    codeStr.includes("float(") ||
+    codeStr.includes("list(") ||
+    codeStr.includes("dict(") ||
+    codeStr.includes("set(") ||
+    codeStr.includes("tuple(") ||
+    codeStr.includes("range(") ||
+    codeStr.includes("map(") ||
+    codeStr.includes("filter(") ||
+    codeStr.includes("zip(") ||
+    codeStr.includes("#")
   ) {
     return "python"
   }
@@ -111,68 +140,151 @@ function detectLanguage(code: string): string {
   return "text"
 }
 
-// 코드 블록 컴포넌트 - 하이드레이션 에러 해결 및 언어 자동 감지
+// 개선된 마크다운 전처리 함수 (TypeScript 오류 수정)
+function preprocessMarkdown(content: string): string {
+  let processed = content
+
+  processed = processed.replace(/`([^`]*\n[^`]*)`/g, (match, code) => {
+    let cleanCode = code.trim()
+    
+    // 스마트 주석 처리
+    cleanCode = cleanCode
+      .split('\n')
+      .map((line: string) => {  // index, lines 매개변수 제거
+        // 주석만 있는 줄은 그대로 유지
+        if (line.trim().startsWith('#')) {
+          return line
+        }
+        
+        // 코드 + 인라인 주석이 있는 경우
+        const commentIndex = line.indexOf('#')
+        if (commentIndex > 0) {
+          const beforeComment = line.substring(0, commentIndex).trim()
+          const comment = line.substring(commentIndex).trim()
+          
+          // 코드가 너무 길면 주석을 다음 줄로
+          if (beforeComment.length > 40) {
+            return beforeComment + '\n    ' + comment
+          }
+          // 적당한 길이면 인라인 유지 (패딩 추가)
+          else {
+            const padding = Math.max(2, 10 - beforeComment.length)
+            return beforeComment + ' '.repeat(padding) + comment
+          }
+        }
+        
+        return line
+      })
+      .join('\n')
+    
+    return `\`\`\`python\n${cleanCode}\n\`\`\``
+  })
+
+  return processed
+}
+
+// 마크다운 후처리 함수
+function postprocessMarkdown(renderedContent: string): string {
+  // 임시로 치환한 # 문자를 복원
+  return renderedContent.replace(/___HASH___/g, '#')
+}
+
 function CodeBlock({ inline, className, children, ...props }: CodeBlockProps) {
   const { theme } = useTheme()
   const match = /language-(\w+)/.exec(className || "")
   let language = match ? match[1] : ""
   const codeString = String(children || "").replace(/\n$/, "")
 
-  // 언어가 감지되지 않았으면 자동 감지 시도
+  // 언어 감지
   if (!language || language === "text") {
     language = detectLanguage(codeString)
   }
 
   if (inline) {
     return (
-      <code
-        className="px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded text-sm font-mono border border-red-200 dark:border-red-800"
-        {...props}
-      >
+      <code className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-red-600 dark:text-red-400 rounded text-sm font-mono border">
         {children}
       </code>
     )
   }
 
-  // 하이드레이션 에러 방지를 위해 span 사용
+  const lineCount = codeString.split('\n').length
+
   return (
-    <span className="block relative group my-6">
-      {/* 언어 라벨 */}
-      {language && language !== "text" && (
-        <span className="absolute top-0 left-4 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full z-10 shadow-lg">
-          {language.toUpperCase()}
-        </span>
-      )}
+    <div className="relative group my-6 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+          </div>
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            {language.toUpperCase()}
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">{lineCount} lines</span>
+          <CopyButton text={codeString} />
+        </div>
+      </div>
 
-      {/* 복사 버튼 */}
-      <CopyButton text={codeString} />
+      {/* 코드 영역 */}
+      <div className="relative">
+        <SyntaxHighlighter
+          style={theme === "dark" ? vscDarkPlus : vs}
+          language={language}
+          PreTag="div"
+          showLineNumbers={lineCount > 1}
+          wrapLongLines={true}
+          lineNumberStyle={{
+            minWidth: '3em',
+            paddingRight: '1em',
+            textAlign: 'right',
+            color: theme === "dark" ? '#6b7280' : '#9ca3af',
+            borderRight: `1px solid ${theme === "dark" ? '#374151' : '#e5e7eb'}`,
+            marginRight: '1em',
+            fontSize: '12px',
+          }}
+          customStyle={{
+            margin: 0,
+            padding: '1.25rem',
+            background: 'transparent',
+            fontSize: '14px',
+            lineHeight: '1.6',
+            fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace",
+          }}
+          codeTagProps={{
+            style: {
+              fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace",
+            }
+          }}
+        >
+          {codeString}
+        </SyntaxHighlighter>
+      </div>
 
-      {/* 코드 하이라이터 - 언어별 최적화 */}
-      <SyntaxHighlighter
-        style={theme === "dark" ? oneDark : oneLight}
-        language={language}
-        PreTag="div"
-        className="!mt-0 !mb-0 rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-lg"
-        showLineNumbers={codeString.split("\n").length > 3}
-        wrapLines={true}
-        customStyle={{
-          margin: 0,
-          borderRadius: "0.5rem",
-          fontSize: "14px",
-          lineHeight: "1.6",
-          padding: "1.5rem",
-          background: theme === "dark" ? "#1e293b" : "#f8fafc",
-        }}
-        codeTagProps={{
-          style: {
-            fontSize: "14px",
-            fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
-          },
-        }}
-      >
-        {codeString}
-      </SyntaxHighlighter>
-    </span>
+      {/* 개선된 주석 스타일링 */}
+      <style jsx>{`
+        .markdown-content .token.comment {
+          color: ${theme === 'dark' ? '#68d391' : '#38a169'} !important;
+          font-style: italic;
+          background: ${theme === 'dark' ? 'rgba(104, 211, 145, 0.1)' : 'rgba(56, 161, 105, 0.1)'};
+          padding: 2px 4px;
+          border-radius: 3px;
+          border-left: 3px solid ${theme === 'dark' ? '#68d391' : '#38a169'};
+        }
+        
+        /* 주석 라인 전체 강조 */
+        .markdown-content .line-highlight-comment {
+          background: ${theme === 'dark' ? 'rgba(104, 211, 145, 0.05)' : 'rgba(56, 161, 105, 0.05)'} !important;
+          border-left: 2px solid ${theme === 'dark' ? '#68d391' : '#38a169'};
+          padding-left: 8px;
+        }
+      `}</style>
+    </div>
   )
 }
 
@@ -507,6 +619,9 @@ const components: Components = {
 }
 
 export default function MarkdownRenderer({ content, className = "" }: MarkdownRendererProps) {
+  // 마크다운 전처리
+  const processedContent = preprocessMarkdown(content)
+  
   return (
     <div
       className={`prose prose-lg max-w-none dark:prose-invert markdown-content ${className}`}
@@ -526,7 +641,7 @@ export default function MarkdownRenderer({ content, className = "" }: MarkdownRe
         remarkPlugins={[remarkGfm, remarkBreaks, remarkEmoji]}
         rehypePlugins={[rehypeRaw]}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
 
       <style jsx>{`
@@ -537,6 +652,25 @@ export default function MarkdownRenderer({ content, className = "" }: MarkdownRe
           --table-text: rgb(226 232 240);
           --table-border: rgb(71 85 105);
           --table-border-light: rgb(71 85 105);
+        }
+        
+        /* 인라인 코드 내의 # 문자 보호 */
+        .markdown-content code {
+          white-space: pre-wrap;
+        }
+        
+        /* 코드 블록 내에서 헤더 스타일 무효화 */
+        .markdown-content pre code h1,
+        .markdown-content pre code h2,
+        .markdown-content pre code h3,
+        .markdown-content pre code h4,
+        .markdown-content pre code h5,
+        .markdown-content pre code h6 {
+          font-size: inherit !important;
+          font-weight: inherit !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
         }
       `}</style>
     </div>
